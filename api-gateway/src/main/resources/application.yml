@@ -1,0 +1,29 @@
+server:
+  port: 8080
+
+management:
+  endpoint:
+    gateway:
+      access: read_only
+  endpoints:
+    web:
+      exposure:
+        include: health, gateway, prometheus
+
+spring:
+  application:
+    name: api-gateway
+  threads:
+    virtual:
+      enabled: true
+  cloud:
+    gateway:
+      server:
+        webmvc:
+          routes:
+            - id: httpbin-test
+              uri: https://httpbin.org
+              predicates:
+                - Path=/test/**
+              filters:
+                - StripPrefix=1
