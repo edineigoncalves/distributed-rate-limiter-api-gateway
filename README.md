@@ -35,8 +35,8 @@ curl http://localhost:8080/test/get
 ## Architecture decisions
 All ADRs live in [`docs/adr/`](docs/adr/). Key ones:
 
-- [ADR-0008: Platform baseline — Spring Boot 4.0](docs/adr/0008-platform-baseline-spring-boot-4.md)
-- [ADR-0009: Multi-repository structure](docs/adr/0009-multi-repo-structure.md)
+- [ADR-0001: Platform baseline — Spring Boot 4.0](docs/adr/0008-platform-baseline-spring-boot-4.md)
+- [ADR-0002: Multi-repository structure](docs/adr/0009-multi-repo-structure.md)
 
 ## Known limitations
 - `/actuator/gateway/routes` is not available with the WebMVC starter.
