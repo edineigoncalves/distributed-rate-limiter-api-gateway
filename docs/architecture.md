@@ -20,6 +20,23 @@ per-tenant limits without becoming a bottleneck.
 
 ![Container diagram](images/architecture-container.png)
 
+## Component diagram — Rate Limiter Service
+
+![Component diagram — Rate Limiter Service internals](images/architecture-component-rate-limiter.png)
+
+This diagram zooms into the Rate Limiter Service, following the C4 Component
+level. External actors (API Gateway as caller, Redis as shared state, Kafka
+as event log) are shown at the boundary for context but are not part of this
+service.
+
+Key flow:
+1. The API Gateway calls `/check` over HTTP
+2. The Key Extractor resolves the rate-limit key from request metadata
+3. The Decision Engine consults the local Caffeine cache (hot path)
+4. On cache miss, the Lettuce Client falls back to Redis for global state
+5. The Kafka Producer publishes a consumption event regardless of the decision
+6. The decision (allow/deny) is returned as HTTP 200 or HTTP 429
+
 ## Components
 
 ### API Gateway
