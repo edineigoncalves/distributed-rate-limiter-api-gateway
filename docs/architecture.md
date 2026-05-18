@@ -62,16 +62,66 @@ Key flow:
 ## Key design properties
 
 ### Horizontal scalability
-Pending. To be drafted in a future session.
+The Rate Limiter Service is stateless: each instance can be added or
+removed without coordination with other instances. Shared state lives
+outside the service — in Redis (authoritative counter store) and Kafka
+(in-flight consumption events) — while each instance maintains a local
+Caffeine cache as a read-side optimization. Because the cache is a
+non-authoritative copy of state, divergence between instance caches is
+acceptable and is reconciled eventually through Redis. Adding capacity
+is therefore a matter of running additional instances behind a load
+balancer; throughput scales near-linearly with instance count.
 
 ### Eventual consistency
-Pending. To be drafted in a future session.
+Rate-limit decisions are made against the local Caffeine cache without
+waiting for cross-instance coordination. Each consumption event is
+published to Kafka and asynchronously applied to the shared Redis
+counter store by the Async Counter Processor, with a target lag SLO of
+sub-500ms. During this propagation window, multiple instances may
+independently decide based on slightly stale local state, allowing
+brief over-limit bursts at the system boundary. This is an explicit
+trade-off: the platform accepts bounded inconsistency in exchange for
+sub-5ms p99 decision latency and linear horizontal scalability — an
+AP choice over strong consistency under the CAP model.
 
-### Fault tolerance
-Pending. To be drafted in a future session.
+### Fault tolerance1
+The platform degrades gracefully when shared infrastructure becomes
+unavailable. When Redis is unreachable, the Rate Limiter falls open:
+decisions are made against the local Caffeine cache with an aggressive
+read timeout (5ms), and unknown keys are allowed through rather than
+blocked. The rationale is that a rate limiter that fails closed becomes
+itself the bottleneck it was designed to prevent.
+
+When Kafka is unavailable, consumption events are buffered locally and
+retried with exponential backoff. Events that exceed the retry budget
+are routed to a dead-letter queue (DLQ) for later inspection, preserving
+operational visibility without blocking the decision path. To prevent
+double-counting on retry, each event carries a UUID; the Async Counter
+Processor deduplicates against recently seen IDs before applying
+increments to Redis.
 
 ### Observability
-Pending. To be drafted in a future session.
+The platform exposes three observability surfaces: metrics, structured
+logs, and distributed traces.
+
+Metrics are exported in Prometheus format from all services and
+visualized in Grafana. The core signals are: decision latency
+(p50/p95/p99) to validate the sub-5ms SLO, throughput (RPS per instance)
+to validate capacity, allow/deny rate to confirm rate-limit behavior,
+cache hit rate on the Caffeine layer to validate the hot path, Kafka
+consumer lag on the Async Counter Processor to validate the sub-500ms
+consistency SLO, and infrastructure health (Redis, Kafka, per-instance
+up/down).
+
+Logs are structured (JSON) to enable filtering, aggregation, and
+alerting on fields such as request id, tenant, decision outcome, and
+rate-limit key. Text-based logs are not used.
+
+Distributed tracing is instrumented with OpenTelemetry from day one,
+propagating trace context across the API Gateway, Rate Limiter Service,
+and Async Counter Processor. Traces enable end-to-end visibility from
+inbound HTTP request through the decision path, Kafka event publication,
+and asynchronous counter consolidation in Redis.
 
 ## Architecture decisions
 Major architectural choices are documented as ADRs. See:
