@@ -127,5 +127,6 @@ and asynchronous counter consolidation in Redis.
 Major architectural choices are documented as ADRs. See:
 - [ADR-0001: Platform baseline — Spring Boot 4.0](adr/0001-platform-baseline-spring-boot-4.md)
 - [ADR-0002: Multi-repository structure](adr/0002-repository-structure.md)
+- [ADR-0003: Rate-limit check contract — HTTP/REST v1](adr/0003-rate-limit-check-contract-http-v1.md)
 
 Additional ADRs will be added as decisions are made during implementation.
