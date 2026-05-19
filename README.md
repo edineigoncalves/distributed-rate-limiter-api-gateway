@@ -37,6 +37,7 @@ All ADRs live in [`docs/adr/`](docs/adr/). Key ones:
 
 - [ADR-0001: Platform baseline — Spring Boot 4.0](docs/adr/0001-platform-baseline-spring-boot-4.md)
 - [ADR-0002: Multi-repository structure](docs/adr/0002-multi-repo-structure.md)
+- [ADR-0003: Rate-limit check contract](docs/adr/0003-...)
 
 ## Known limitations
 - `/actuator/gateway/routes` is not available with the WebMVC starter.
