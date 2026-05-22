@@ -3,9 +3,20 @@ package com.distributed.ratelimiter.gateway.client;
 public sealed interface CheckResult
         permits CheckResult.Allow, CheckResult.Deny {
 
-    int remaining(); // real capacity available in bucket after decision
-    int limit(); //total capacity bucket
-    long resetAt(); //Unix timestamp when the bucket will refill"
+    /**
+     * Number of tokens remaining in the bucket after the decision.
+     */
+    int remaining();
+
+    /**
+     * Total capacity of the bucket (the rate-limit threshold).
+     */
+    int limit();
+
+    /**
+     * Unix timestamp (seconds) when the bucket refills.
+     */
+    long resetAt();
 
     static CheckResult allow(int remaining, int limit, long resetAt) {
         return new Allow(remaining, limit, resetAt);
