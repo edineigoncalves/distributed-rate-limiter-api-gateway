@@ -1,12 +1,17 @@
 package com.distributed.ratelimiter.gateway.client;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.springframework.web.client.RestClient;
 
 import static org.assertj.core.api.Assertions.*;
 
 class HttpRateLimitClientTest {
 
-    private final HttpRateLimitClient client = new HttpRateLimitClient();
+    @Mock
+    private RestClient restClient;
+
+    private final HttpRateLimitClient client = new HttpRateLimitClient(restClient);
 
     @Test
     void shouldReturnAllow() {

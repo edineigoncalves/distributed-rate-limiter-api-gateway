@@ -10,20 +10,14 @@ management:
       exposure:
         include: health, gateway, prometheus
 
+integration:
+  rate-limiter:
+    service:
+      url: http://localhost:8081
+
 spring:
   application:
     name: api-gateway
   threads:
     virtual:
       enabled: true
-  cloud:
-    gateway:
-      server:
-        webmvc:
-          routes:
-            - id: httpbin-test
-              uri: https://httpbin.org
-              predicates:
-                - Path=/test/**
-              filters:
-                - StripPrefix=1
